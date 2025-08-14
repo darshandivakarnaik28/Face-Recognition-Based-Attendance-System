@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+        }
+
+        h1 {
+            color: #4CAF50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 90%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #ddd;
+        }
+
+        input[type="date"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+
+        .filter-form {
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            font-size: 1.1em;
+            color: #4CAF50;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            table {
+                width: 100%;
+            }
+
+            button, input[type="date"] {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Attendance Records</h1>
+
+    <!-- Form to Clear Attendance -->
+    <div class="form-container">
+        <form action="/clear_attendance" method="POST">
+            <button type="submit">Clear All Attendance</button>
+        </form>
+    </div>
+
+    <!-- Date Filter Form -->
+    <div class="filter-form">
+        <form action="/records" method="GET">
+            <label for="date">Select Date:</label>
+            <input type="date" id="date" name="date">
+            <button type="submit">Filter</button>
+        </form>
+    </div>
+
+    <!-- Attendance Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>USN</th>
+                <th>Branch</th>
+                <th>Semester</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>Date</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ record[0] }}</td>  <!-- name -->
+                <td>{{ record[1] }}</td>  <!-- usn -->
+                <td>{{ record[2] }}</td>  <!-- branch -->
+                <td>{{ record[3] }}</td>  <!-- semester -->
+                <td>{{ record[4] }}</td>  <!-- email -->
+                <td>{{ record[5] }}</td>  <!-- address -->
+                <td>{{ record[6] }}</td>  <!-- date -->
+                <td>{{ record[7] or 'N/A' }}</td>  <!-- time_in -->
+                <td>{{ record[8] or 'N/A' }}</td>  <!-- time_out -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Link back to home -->
+    <a href="/" class="back-link">Back to Home</a>
+
+</body>
+</html>
