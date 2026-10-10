@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance</title>
+    <style>
+        /* Background Image */
+        body {
+            background-image: url('https://images.app.goo.gl/brEpqhzmoC4wKqr98.jpeg'); /* Replace with your desired image URL */
+            background-size: cover;
+            background-position: center;
+            font-family: 'Arial', sans-serif;
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+        }
+
+        /* Main Container */
+        .container {
+            text-align: center;
+            margin-top: 100px;
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        h1 {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 20px 0;
+        }
+
+        a {
+            text-decoration: none;
+            font-size: 1.5em;
+            color: #4CAF50;
+            padding: 10px 20px;
+            background-color: white;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        input[type="date"] {
+            padding: 10px;
+            font-size: 1.2em;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Welcome to Face Recognition Attendance System</h1>
+        <ul>
+            <li><a href="/register">Register Student</a></li>
+            <li><a href="/attendance">Take Attendance</a></li>
+            <li>
+                <form action="/records" method="GET">
+                    <label for="date">Select Date to View Attendance:</label>
+                    <input type="date" name="date" id="date" required>
+                    <button type="submit">View Attendance</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+
+</body>
+</html>

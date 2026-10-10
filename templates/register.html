@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Student</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 30px 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1519681393784-68c600dc3c39?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2E7D32;
+            font-size: 2em;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+        .alert-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        .alert-success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        /* Camera preview section */
+        .camera-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #111;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        #webcam {
+            width: 100%;
+            max-height: 260px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #222;
+            transform: scaleX(-1); /* Mirror view for natural feel */
+        }
+
+        #captured-canvas {
+            display: none;
+        }
+
+        .camera-status {
+            color: #fff;
+            font-size: 0.85em;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        label {
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        input[type="text"], input[type="email"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        textarea {
+            height: 70px;
+            resize: vertical;
+        }
+
+        .upload-toggle {
+            font-size: 0.88em;
+            color: #1976D2;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+
+        #file-upload-box {
+            display: none;
+            margin-bottom: 16px;
+            padding: 10px;
+            background: #f0f4f8;
+            border-radius: 6px;
+        }
+
+        button.btn-submit {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 13px 20px;
+            font-size: 1.15em;
+            font-weight: bold;
+            border-radius: 6px;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button.btn-submit:hover {
+            background-color: #43A047;
+        }
+
+        button.btn-submit:disabled {
+            background-color: #9E9E9E;
+            cursor: not-allowed;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 18px;
+        }
+
+        .form-footer a {
+            color: #2E7D32;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Register Student</h1>
+
+        {% if error_message %}
+            <div class="alert alert-error">{{ error_message }}</div>
+        {% endif %}
+        {% if success_message %}
+            <div class="alert alert-success">{{ success_message }}</div>
+        {% endif %}
+
+        <!-- Live Camera View -->
+        <div class="camera-section" id="camera-container">
+            <video id="webcam" autoplay playsinline></video>
+            <div class="camera-status" id="camera-status">Initializing camera...</div>
+            <canvas id="captured-canvas" width="640" height="480"></canvas>
+        </div>
+
+        <span class="upload-toggle" id="toggle-upload">Or choose a photo from your computer</span>
+        <div id="file-upload-box">
+            <label for="image_file">Upload Student Photo (Face must be clear):</label>
+            <input type="file" id="image_file" name="image_file" accept="image/*">
+        </div>
+
+        <form id="register-form" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="image_data" id="image_data">
+
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" placeholder="Full Name" required>
+
+            <label for="usn">USN / Roll No:</label>
+            <input type="text" name="usn" id="usn" placeholder="e.g. 1MS21CS001" required>
+
+            <label for="branch">Branch:</label>
+            <input type="text" name="branch" id="branch" placeholder="e.g. CSE / ISE / ECE" required>
+
+            <label for="semester">Semester:</label>
+            <input type="text" name="semester" id="semester" placeholder="e.g. 6" required>
+
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" placeholder="student@example.com" required>
+
+            <label for="address">Address:</label>
+            <textarea name="address" id="address" placeholder="Student Address" required></textarea>
+
+            <button type="submit" class="btn-submit" id="submit-btn">Capture & Register</button>
+        </form>
+
+        <div class="form-footer">
+            <a href="/">← Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('captured-canvas');
+        const cameraStatus = document.getElementById('camera-status');
+        const imageDataInput = document.getElementById('image_data');
+        const registerForm = document.getElementById('register-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const toggleUpload = document.getElementById('toggle-upload');
+        const fileUploadBox = document.getElementById('file-upload-box');
+        const fileInput = document.getElementById('image_file');
+        let cameraStream = null;
+        let useFileUpload = false;
+
+        // Initialize webcam
+        async function startCamera() {
+            try {
+                cameraStatus.innerText = "Requesting camera permission...";
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }
+                });
+                video.srcObject = cameraStream;
+                cameraStatus.innerText = "Camera ready. Position your face in view.";
+            } catch (err) {
+                console.error("Camera access error:", err);
+                cameraStatus.innerText = "Camera not accessible in browser (" + (err.name || "Permission denied") + "). Please use the file upload option below.";
+                fileUploadBox.style.display = "block";
+                useFileUpload = true;
+                submitBtn.innerText = "Register Student";
+            }
+        }
+
+        startCamera();
+
+        // Toggle file upload option
+        toggleUpload.addEventListener('click', () => {
+            useFileUpload = !useFileUpload;
+            if (useFileUpload) {
+                fileUploadBox.style.display = "block";
+                toggleUpload.innerText = "Switch back to webcam";
+                submitBtn.innerText = "Register with Uploaded Photo";
+            } else {
+                fileUploadBox.style.display = "none";
+                toggleUpload.innerText = "Or choose a photo from your computer";
+                submitBtn.innerText = "Capture & Register";
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imageDataInput.value = e.target.result;
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            }
+        });
+
+        // Form submit handler
+        registerForm.addEventListener('submit', (e) => {
+            if (!useFileUpload && cameraStream) {
+                // Snapshot from webcam video
+                const context = canvas.getContext('2d');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                imageDataInput.value = canvas.toDataURL('image/jpeg', 0.92);
+            }
+
+            if (!imageDataInput.value && !fileInput.files.length) {
+                e.preventDefault();
+                alert("Please allow camera access or choose a photo file to capture the face.");
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Processing Face & Registering...";
+        });
+    </script>
+</body>
+</html>

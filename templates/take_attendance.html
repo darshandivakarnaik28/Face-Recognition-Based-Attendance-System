@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Attendance - Face Recognition</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
+            color: #333;
+            margin: 0;
+            padding: 30px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #2E7D32;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            width: 100%;
+            max-width: 950px;
+            justify-content: center;
+        }
+
+        .camera-card {
+            flex: 1 1 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .video-box {
+            width: 100%;
+            background: #111;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 360px;
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        #scanner-canvas {
+            display: none;
+        }
+
+        .scanning-indicator {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00E676;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #00E676;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.3; transform: scale(0.8); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+            width: 100%;
+        }
+
+        button {
+            padding: 12px 18px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .btn-toggle {
+            background-color: #2E7D32;
+            color: white;
+        }
+        .btn-toggle:hover {
+            background-color: #1B5E20;
+        }
+
+        .btn-records {
+            background-color: #1976D2;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-records:hover {
+            background-color: #1565C0;
+        }
+
+        .log-card {
+            flex: 1 1 350px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            max-height: 520px;
+        }
+
+        .log-title {
+            font-size: 1.25em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .log-list {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 4px;
+        }
+
+        .log-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            background: #E8F5E9;
+            margin-bottom: 8px;
+            border-left: 4px solid #2E7D32;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-name {
+            font-weight: bold;
+            color: #1B5E20;
+            font-size: 1.05em;
+        }
+
+        .log-detail {
+            font-size: 0.85em;
+            color: #555;
+            margin-top: 3px;
+        }
+
+        .status-banner {
+            width: 100%;
+            margin-top: 14px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.95em;
+            text-align: center;
+            background: #f5f5f5;
+            color: #666;
+        }
+        .status-banner.success {
+            background: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .home-link {
+            margin-top: 24px;
+            color: #2E7D32;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .home-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Automated Attendance Scanner</h1>
+
+    <div class="main-container">
+        <!-- Live Camera View -->
+        <div class="camera-card">
+            <div class="video-box">
+                <video id="webcam" autoplay playsinline></video>
+                <div class="scanning-indicator" id="scanner-indicator">
+                    <div class="pulse-dot"></div>
+                    <span>Camera Active • Scanning</span>
+                </div>
+            </div>
+            <canvas id="scanner-canvas" width="640" height="480"></canvas>
+
+            <div class="status-banner" id="status-banner">Point your face towards the camera to mark attendance</div>
+
+            <div class="controls">
+                <button class="btn-toggle" id="btn-toggle-scan">Pause Scanning</button>
+                <a href="/records" class="btn-records">View All Records</a>
+            </div>
+        </div>
+
+        <!-- Attendance Feed / Log -->
+        <div class="log-card">
+            <div class="log-title">Live Attendance Log</div>
+            <div class="log-list" id="log-list">
+                <div style="color: #999; text-align: center; margin-top: 50px;">
+                    Recognized students will appear here in real time...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="/" class="home-link">← Back to Home</a>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('scanner-canvas');
+        const statusBanner = document.getElementById('status-banner');
+        const scannerIndicator = document.getElementById('scanner-indicator');
+        const logList = document.getElementById('log-list');
+        const btnToggleScan = document.getElementById('btn-toggle-scan');
+
+        let isScanning = true;
+        let isProcessing = false;
+        let stream = null;
+        let emptyLogShown = true;
+        let lastRecognized = {};
+
+        // Start Browser Webcam
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }
+                });
+                video.srcObject = stream;
+                statusBanner.innerText = "Camera initialized. Looking for registered faces...";
+                startScanningLoop();
+            } catch (err) {
+                console.error("Camera access failed:", err);
+                statusBanner.innerText = "Camera access error: " + err.message + ". Please ensure camera permissions are allowed.";
+                scannerIndicator.style.display = "none";
+            }
+        }
+
+        initCamera();
+
+        // Scanning loop
+        function startScanningLoop() {
+            setInterval(async () => {
+                if (!isScanning || isProcessing || !video.videoWidth) return;
+
+                isProcessing = true;
+                try {
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 480;
+                    canvas.height = 360;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL('image/jpeg', 0.85);
+
+                    const res = await fetch('/api/mark_attendance', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image_data: imageData })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.recognized && data.matches && data.matches.length > 0) {
+                            data.matches.forEach(student => {
+                                const now = Date.now();
+                                if (!lastRecognized[student.name] || (now - lastRecognized[student.name]) > 5000) {
+                                    lastRecognized[student.name] = now;
+                                    addAttendanceLog(student);
+                                    statusBanner.className = "status-banner success";
+                                    statusBanner.innerText = `Attendance marked for ${student.name} (${student.action || 'Checked In'})!`;
+                                }
+                            });
+                        }
+                    }
+                } catch (err) {
+                    console.error("Scanning error:", err);
+                } finally {
+                    isProcessing = false;
+                }
+            }, 1200); // Scan every 1.2 seconds
+        }
+
+        function addAttendanceLog(student) {
+            if (emptyLogShown) {
+                logList.innerHTML = '';
+                emptyLogShown = false;
+            }
+
+            const item = document.createElement('div');
+            item.className = 'log-item';
+            item.innerHTML = `
+                <div class="log-name">${student.name}</div>
+                <div class="log-detail">USN: ${student.usn} | ${student.branch} (Sem ${student.semester})</div>
+                <div class="log-detail">Time: ${student.time} • Status: ${student.action || 'Marked'}</div>
+            `;
+            logList.prepend(item);
+        }
+
+        btnToggleScan.addEventListener('click', () => {
+            isScanning = !isScanning;
+            if (isScanning) {
+                btnToggleScan.innerText = "Pause Scanning";
+                btnToggleScan.style.backgroundColor = "#2E7D32";
+                scannerIndicator.style.display = "flex";
+                statusBanner.className = "status-banner";
+                statusBanner.innerText = "Scanning resumed...";
+            } else {
+                btnToggleScan.innerText = "Resume Scanning";
+                btnToggleScan.style.backgroundColor = "#E65100";
+                scannerIndicator.style.display = "none";
+                statusBanner.className = "status-banner";
+                statusBanner.innerText = "Scanning paused.";
+            }
+        });
+    </script>
+</body>
+</html>
